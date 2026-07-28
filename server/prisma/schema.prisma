@@ -1,0 +1,245 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model FinancialYear {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  invoices         Invoice[]
+  redBookEntries   RedBookEntry[]
+  ledgerEntries    LedgerEntry[]
+  dayBookEntries   DayBookEntry[]
+  arrivals         Arrival[]
+  teeps            TEEP[]
+}
+
+model Invoice {
+  id                String   @id @default(uuid())
+  financialYearId   String
+  serialNumber      Int
+  invoiceNumber     String
+  invoiceDate       DateTime
+  customerName      String
+  customerPhone     String?
+  customerAddress   String?
+  truckNumber       String?
+  challanNumber     String?
+  nag               String?
+  nagSummary        String?
+  discount          Decimal  @default(0)
+  tax               Decimal  @default(0)
+  additionalCharges Decimal  @default(0)
+  grossTotal        Decimal  @default(0)
+  totalExpenses     Decimal  @default(0)
+  grandTotal        Decimal  @default(0)
+  status            String   @default("active")
+  expensesJson      String?
+  labourAuto        Boolean  @default(false)
+  labourPerNag      Decimal?
+  forwardingAuto    Boolean  @default(false)
+  forwardingPercent Decimal?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  financialYear FinancialYear @relation(fields: [financialYearId], references: [id])
+  items         InvoiceItem[]
+
+  @@unique([financialYearId, serialNumber])
+  @@index([financialYearId])
+  @@index([invoiceDate])
+  @@index([customerName])
+  @@index([status])
+}
+
+model InvoiceItem {
+  id          String  @id @default(uuid())
+  invoiceId   String
+  description String
+  quantity    Decimal
+  rate        Decimal
+  amount      Decimal
+  sortOrder   Int     @default(0)
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+model RedBookEntry {
+  id              String   @id @default(uuid())
+  financialYearId String
+  entryDate       DateTime
+  recordNumber    String
+  partyName       String
+  description     String?
+  quantity        Decimal  @default(0)
+  rate            Decimal  @default(0)
+  amount          Decimal  @default(0)
+  remarks         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  financialYear FinancialYear @relation(fields: [financialYearId], references: [id])
+
+  @@index([financialYearId])
+  @@index([entryDate])
+  @@index([partyName])
+}
+
+model LedgerEntry {
+  id              String   @id @default(uuid())
+  financialYearId String
+  partyName       String
+  entryDate       DateTime
+  description     String?
+  debit           Decimal  @default(0)
+  credit          Decimal  @default(0)
+  runningBalance  Decimal  @default(0)
+  paymentStatus   String   @default("pending")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  financialYear FinancialYear @relation(fields: [financialYearId], references: [id])
+
+  @@index([financialYearId])
+  @@index([partyName])
+  @@index([entryDate])
+}
+
+model DayBookEntry {
+  id              String   @id @default(uuid())
+  financialYearId String
+  entryDate       DateTime
+  voucherNumber   String
+  transactionType String
+  partyName       String
+  description     String?
+  debit           Decimal  @default(0)
+  credit          Decimal  @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  financialYear FinancialYear @relation(fields: [financialYearId], references: [id])
+
+  @@index([financialYearId])
+  @@index([entryDate])
+  @@index([voucherNumber])
+}
+
+model Arrival {
+  id              String   @id @default(uuid())
+  financialYearId String
+  arrivalNumber   String
+  arrivalDate     DateTime
+  partyName       String
+  itemName        String
+  quantity        Decimal  @default(0)
+  rate            Decimal  @default(0)
+  amount          Decimal  @default(0)
+  remarks         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  financialYear FinancialYear @relation(fields: [financialYearId], references: [id])
+
+  @@index([financialYearId])
+  @@index([arrivalDate])
+  @@index([partyName])
+}
+
+model TEEP {
+  id              String   @id @default(uuid())
+  financialYearId String
+  teepNumber      String
+  saleDate        DateTime
+  remarks         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  financialYear FinancialYear @relation(fields: [financialYearId], references: [id])
+  customers     TEEPCustomer[]
+
+  @@index([financialYearId])
+  @@index([saleDate])
+}
+
+model TEEPCustomer {
+  id               String   @id @default(uuid())
+  teepId           String
+  billNumber       String
+  customerName     String
+  discountType     String   @default("fixed")
+  discountValue    Decimal  @default(0)
+  discountAmount   Decimal  @default(0)
+  subtotal         Decimal  @default(0)
+  netPayable       Decimal  @default(0)
+  amountPaid       Decimal  @default(0)
+  remainingBalance Decimal  @default(0)
+  paymentDuration  String   @default("immediate")
+  customDurationDays Int?
+  paymentDueDate   DateTime
+  paymentStatus    String   @default("unpaid")
+  remarks          String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  teep              TEEP                   @relation(fields: [teepId], references: [id], onDelete: Cascade)
+  items             TEEPItem[]
+  additionalCharges TEEPAdditionalCharge[]
+  payments          TEEPPayment[]
+
+  @@index([teepId])
+  @@index([customerName])
+  @@index([paymentStatus])
+}
+
+model TEEPItem {
+  id         String  @id @default(uuid())
+  customerId String
+  goodsName  String
+  quantity   Decimal @default(0)
+  unit       String  @default("Nag")
+  rate       Decimal @default(0)
+  amount     Decimal @default(0)
+  sortOrder  Int     @default(0)
+
+  customer TEEPCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+}
+
+model TEEPAdditionalCharge {
+  id         String  @id @default(uuid())
+  customerId String
+  name       String
+  chargeType String  @default("fixed")
+  value      Decimal @default(0)
+  amount     Decimal @default(0)
+
+  customer TEEPCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+}
+
+model TEEPPayment {
+  id          String   @id @default(uuid())
+  customerId  String
+  amount      Decimal  @default(0)
+  paymentDate DateTime
+  remarks     String?
+  createdAt   DateTime @default(now())
+
+  customer TEEPCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+}

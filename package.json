@@ -1,0 +1,36 @@
+{
+  "name": "veerpal-singh-invoice",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:server": "npm --prefix server run dev",
+    "dev:all": "npm run dev:server & npm run dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "cap:sync": "npm run build && npx cap sync",
+    "cap:open:android": "npx cap open android",
+    "android:apk": "npm run cap:sync && cd android && JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" ./gradlew assembleDebug",
+    "android:install": "npm run android:apk && adb install -r android/app/build/outputs/apk/debug/app-debug.apk",
+    "db:setup": "npm --prefix server install && npm --prefix server run db:push && npm --prefix server run db:seed"
+  },
+  "dependencies": {
+    "@capacitor-community/sqlite": "^7.0.3",
+    "@capacitor/android": "^7.4.2",
+    "@capacitor/core": "^7.4.2",
+    "@capacitor/filesystem": "^7.1.8",
+    "@capacitor/share": "^7.0.4",
+    "@capacitor/status-bar": "^7.0.2",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.2",
+    "@vitejs/plugin-react": "^4.5.2",
+    "vite": "^6.3.5"
+  }
+}
