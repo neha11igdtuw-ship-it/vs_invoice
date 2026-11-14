@@ -8,6 +8,7 @@ import {
   FORWARDING_PERCENT_PRESETS,
 } from '../utils/constants'
 import { formatNagSummary } from '../utils/nagSummary'
+import { formatCurrency } from '../utils/calculations'
 
 function Field({ label, children, wide }) {
   return (

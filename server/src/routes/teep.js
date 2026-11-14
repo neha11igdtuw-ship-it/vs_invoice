@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { withRetry } from '../lib/retry.js'
 import { asyncHandler, parsePagination } from '../lib/errors.js'
 import {
   listTeeps,
@@ -53,7 +54,7 @@ router.get(
 router.post(
   '/',
   asyncHandler(async (req, res) => {
-    res.status(201).json(await createTeep(req.body))
+    res.status(201).json(await withRetry(() => createTeep(req.body)))
   }),
 )
 

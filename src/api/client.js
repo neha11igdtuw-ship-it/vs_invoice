@@ -16,9 +16,20 @@ async function remoteRequest(path, options = {}) {
 
   const data = await response.json().catch(() => ({}))
   if (!response.ok) {
+    // Session expired or missing: let the auth layer send the user back to the login screen.
+    if (response.status === 401 && !path.startsWith('/auth/')) {
+      window.dispatchEvent(new Event('vs:unauthorized'))
+    }
     throw new Error(data.error || 'Request failed')
   }
   return data
+}
+
+// Server-side session auth (web build). The Android app uses local on-device auth instead.
+export const authApi = {
+  me: () => remoteRequest('/auth/me'),
+  login: (body) => remoteRequest('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
+  logout: () => remoteRequest('/auth/logout', { method: 'POST' }),
 }
 
 const remoteApi = {

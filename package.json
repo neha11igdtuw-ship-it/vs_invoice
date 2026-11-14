@@ -9,11 +9,14 @@
     "dev:all": "npm run dev:server & npm run dev",
     "build": "vite build",
     "preview": "vite preview",
-    "cap:sync": "npm run build && npx cap sync",
+    "cap:sync": "npm run build:native && npx cap sync",
     "cap:open:android": "npx cap open android",
     "android:apk": "npm run cap:sync && cd android && JAVA_HOME=\"/Applications/Android Studio.app/Contents/jbr/Contents/Home\" ./gradlew assembleDebug",
     "android:install": "npm run android:apk && adb install -r android/app/build/outputs/apk/debug/app-debug.apk",
-    "db:setup": "npm --prefix server install && npm --prefix server run db:push && npm --prefix server run db:seed"
+    "db:setup": "npm --prefix server install && npm --prefix server run db:push",
+    "build:native": "CAPACITOR_BUILD=1 vite build",
+    "render:build": "npm install --include=dev && npm run build && npm --prefix server install && npm --prefix server run db:push",
+    "start": "node server/src/index.js"
   },
   "dependencies": {
     "@capacitor-community/sqlite": "^7.0.3",
@@ -32,5 +35,8 @@
     "@capacitor/cli": "^7.4.2",
     "@vitejs/plugin-react": "^4.5.2",
     "vite": "^6.3.5"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

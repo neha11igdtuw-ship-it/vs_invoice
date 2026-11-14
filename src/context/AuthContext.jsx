@@ -1,9 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { Capacitor } from '@capacitor/core'
+import { authApi } from '../api/client'
 
 const AUTH_CONFIG_KEY = 'vs-auth-config'
 const AUTH_SESSION_KEY = 'vs-auth-session'
 
 const AuthContext = createContext(null)
+const isNative = Capacitor.isNativePlatform()
 
 async function hashPassword(password) {
   const data = new TextEncoder().encode(password)
@@ -34,14 +37,40 @@ export function AuthProvider({ children }) {
   const [ready, setReady] = useState(false)
   const [config, setConfig] = useState(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [serverUsername, setServerUsername] = useState('')
 
   useEffect(() => {
-    setConfig(readConfig())
-    setIsAuthenticated(readSession())
-    setReady(true)
+    if (isNative) {
+      setConfig(readConfig())
+      setIsAuthenticated(readSession())
+      setReady(true)
+      return undefined
+    }
+
+    // Web: the session lives in an httpOnly cookie, so ask the server who we are.
+    let cancelled = false
+    authApi
+      .me()
+      .then((user) => {
+        if (cancelled) return
+        setServerUsername(user.username)
+        setIsAuthenticated(true)
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setReady(true)
+      })
+
+    const onUnauthorized = () => setIsAuthenticated(false)
+    window.addEventListener('vs:unauthorized', onUnauthorized)
+    return () => {
+      cancelled = true
+      window.removeEventListener('vs:unauthorized', onUnauthorized)
+    }
   }, [])
 
-  const needsSetup = !config?.username || !config?.passwordHash
+  // On the web the first login is created on the server (ADMIN_USERNAME / ADMIN_PASSWORD), never in the browser.
+  const needsSetup = isNative && (!config?.username || !config?.passwordHash)
 
   const setupAccount = useCallback(async ({ username, password }) => {
     const trimmedUser = username.trim()
@@ -61,6 +90,13 @@ export function AuthProvider({ children }) {
   }, [])
 
   const login = useCallback(async ({ username, password }) => {
+    if (!isNative) {
+      const user = await authApi.login({ username: username.trim(), password })
+      setServerUsername(user.username)
+      setIsAuthenticated(true)
+      return
+    }
+
     const current = readConfig()
     if (!current?.passwordHash) {
       throw new Error('Login not set up yet')
@@ -76,7 +112,11 @@ export function AuthProvider({ children }) {
   }, [])
 
   const logout = useCallback(() => {
-    localStorage.removeItem(AUTH_SESSION_KEY)
+    if (!isNative) {
+      authApi.logout().catch(() => {})
+    } else {
+      localStorage.removeItem(AUTH_SESSION_KEY)
+    }
     setIsAuthenticated(false)
   }, [])
 
@@ -85,12 +125,12 @@ export function AuthProvider({ children }) {
       ready,
       isAuthenticated,
       needsSetup,
-      username: config?.username || '',
+      username: isNative ? config?.username || '' : serverUsername,
       setupAccount,
       login,
       logout,
     }),
-    [ready, isAuthenticated, needsSetup, config, setupAccount, login, logout],
+    [ready, isAuthenticated, needsSetup, config, serverUsername, setupAccount, login, logout],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

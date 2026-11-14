@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext'
 
 export default function LoginPage() {
   const { needsSetup, setupAccount, login } = useAuth()
-  const [username, setUsername] = useState('Veerpal Singh')
+  const [username, setUsername] = useState(needsSetup ? 'Veerpal Singh' : '')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -44,7 +44,7 @@ export default function LoginPage() {
         <h2>{needsSetup ? 'Set up login' : 'Sign in'}</h2>
         <p className="login-subtitle">
           {needsSetup
-            ? 'Create your username and password for this phone or computer.'
+            ? 'Create your username and password for this phone.'
             : 'Enter your username and password to open the app.'}
         </p>
 
@@ -66,7 +66,6 @@ export default function LoginPage() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               autoComplete={needsSetup ? 'new-password' : 'current-password'}
-              minLength={4}
               required
             />
           </label>

@@ -17,6 +17,8 @@ import {
 } from '../utils/invoiceDraft'
 import { exportInvoice, prepareInvoiceForCapture } from '../utils/printInvoice'
 
+const InvoicePreviewModal = lazy(() => import('../components/InvoicePreviewModal'))
+
 export default function InvoiceEditorPage({ mode = 'create' }) {
   const { id } = useParams()
   const navigate = useNavigate()

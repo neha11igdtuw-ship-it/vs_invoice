@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { withRetry } from '../lib/retry.js'
 import { asyncHandler, parsePagination } from '../lib/errors.js'
 import {
   listInvoices,
@@ -48,7 +49,7 @@ router.get(
 router.post(
   '/',
   asyncHandler(async (req, res) => {
-    const invoice = await createInvoice(req.body)
+    const invoice = await withRetry(() => createInvoice(req.body))
     res.status(201).json(invoice)
   }),
 )

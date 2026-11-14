@@ -26,9 +26,9 @@ export async function listInvoices({ financialYearId, search, status, dateFrom, 
   const where = { financialYearId }
   if (search) {
     where.OR = [
-      { customerName: { contains: search } },
-      { invoiceNumber: { contains: search } },
-      { truckNumber: { contains: search } },
+      { customerName: { contains: search, mode: 'insensitive' } },
+      { invoiceNumber: { contains: search, mode: 'insensitive' } },
+      { truckNumber: { contains: search, mode: 'insensitive' } },
     ]
   }
   if (status) where.status = status
