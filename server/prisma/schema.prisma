@@ -3,12 +3,12 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 model FinancialYear {
-  id        String   @id @default(uuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String   @unique
   startDate DateTime
   endDate   DateTime
@@ -24,8 +24,8 @@ model FinancialYear {
 }
 
 model Invoice {
-  id                String   @id @default(uuid())
-  financialYearId   String
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  financialYearId   String @db.ObjectId
   serialNumber      Int
   invoiceNumber     String
   invoiceDate       DateTime
@@ -36,18 +36,18 @@ model Invoice {
   challanNumber     String?
   nag               String?
   nagSummary        String?
-  discount          Decimal  @default(0)
-  tax               Decimal  @default(0)
-  additionalCharges Decimal  @default(0)
-  grossTotal        Decimal  @default(0)
-  totalExpenses     Decimal  @default(0)
-  grandTotal        Decimal  @default(0)
+  discount          String  @default("0")
+  tax               String  @default("0")
+  additionalCharges String  @default("0")
+  grossTotal        String  @default("0")
+  totalExpenses     String  @default("0")
+  grandTotal        String  @default("0")
   status            String   @default("active")
   expensesJson      String?
   labourAuto        Boolean  @default(false)
-  labourPerNag      Decimal?
+  labourPerNag      String?
   forwardingAuto    Boolean  @default(false)
-  forwardingPercent Decimal?
+  forwardingPercent String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -62,12 +62,12 @@ model Invoice {
 }
 
 model InvoiceItem {
-  id          String  @id @default(uuid())
-  invoiceId   String
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  invoiceId   String @db.ObjectId
   description String
-  quantity    Decimal
-  rate        Decimal
-  amount      Decimal
+  quantity    String
+  rate        String
+  amount      String
   sortOrder   Int     @default(0)
 
   invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
@@ -76,15 +76,15 @@ model InvoiceItem {
 }
 
 model RedBookEntry {
-  id              String   @id @default(uuid())
-  financialYearId String
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  financialYearId String @db.ObjectId
   entryDate       DateTime
   recordNumber    String
   partyName       String
   description     String?
-  quantity        Decimal  @default(0)
-  rate            Decimal  @default(0)
-  amount          Decimal  @default(0)
+  quantity        String  @default("0")
+  rate            String  @default("0")
+  amount          String  @default("0")
   remarks         String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -97,14 +97,14 @@ model RedBookEntry {
 }
 
 model LedgerEntry {
-  id              String   @id @default(uuid())
-  financialYearId String
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  financialYearId String @db.ObjectId
   partyName       String
   entryDate       DateTime
   description     String?
-  debit           Decimal  @default(0)
-  credit          Decimal  @default(0)
-  runningBalance  Decimal  @default(0)
+  debit           String  @default("0")
+  credit          String  @default("0")
+  runningBalance  String  @default("0")
   paymentStatus   String   @default("pending")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -117,15 +117,15 @@ model LedgerEntry {
 }
 
 model DayBookEntry {
-  id              String   @id @default(uuid())
-  financialYearId String
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  financialYearId String @db.ObjectId
   entryDate       DateTime
   voucherNumber   String
   transactionType String
   partyName       String
   description     String?
-  debit           Decimal  @default(0)
-  credit          Decimal  @default(0)
+  debit           String  @default("0")
+  credit          String  @default("0")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -137,15 +137,15 @@ model DayBookEntry {
 }
 
 model Arrival {
-  id              String   @id @default(uuid())
-  financialYearId String
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  financialYearId String @db.ObjectId
   arrivalNumber   String
   arrivalDate     DateTime
   partyName       String
   itemName        String
-  quantity        Decimal  @default(0)
-  rate            Decimal  @default(0)
-  amount          Decimal  @default(0)
+  quantity        String  @default("0")
+  rate            String  @default("0")
+  amount          String  @default("0")
   remarks         String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -158,8 +158,8 @@ model Arrival {
 }
 
 model TEEP {
-  id              String   @id @default(uuid())
-  financialYearId String
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  financialYearId String @db.ObjectId
   teepNumber      String
   saleDate        DateTime
   remarks         String?
@@ -174,17 +174,17 @@ model TEEP {
 }
 
 model TEEPCustomer {
-  id               String   @id @default(uuid())
-  teepId           String
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  teepId           String @db.ObjectId
   billNumber       String
   customerName     String
   discountType     String   @default("fixed")
-  discountValue    Decimal  @default(0)
-  discountAmount   Decimal  @default(0)
-  subtotal         Decimal  @default(0)
-  netPayable       Decimal  @default(0)
-  amountPaid       Decimal  @default(0)
-  remainingBalance Decimal  @default(0)
+  discountValue    String  @default("0")
+  discountAmount   String  @default("0")
+  subtotal         String  @default("0")
+  netPayable       String  @default("0")
+  amountPaid       String  @default("0")
+  remainingBalance String  @default("0")
   paymentDuration  String   @default("immediate")
   customDurationDays Int?
   paymentDueDate   DateTime
@@ -204,13 +204,13 @@ model TEEPCustomer {
 }
 
 model TEEPItem {
-  id         String  @id @default(uuid())
-  customerId String
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  customerId String @db.ObjectId
   goodsName  String
-  quantity   Decimal @default(0)
+  quantity   String @default("0")
   unit       String  @default("Nag")
-  rate       Decimal @default(0)
-  amount     Decimal @default(0)
+  rate       String @default("0")
+  amount     String @default("0")
   sortOrder  Int     @default(0)
 
   customer TEEPCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
@@ -219,12 +219,12 @@ model TEEPItem {
 }
 
 model TEEPAdditionalCharge {
-  id         String  @id @default(uuid())
-  customerId String
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  customerId String @db.ObjectId
   name       String
   chargeType String  @default("fixed")
-  value      Decimal @default(0)
-  amount     Decimal @default(0)
+  value      String @default("0")
+  amount     String @default("0")
 
   customer TEEPCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
@@ -232,9 +232,9 @@ model TEEPAdditionalCharge {
 }
 
 model TEEPPayment {
-  id          String   @id @default(uuid())
-  customerId  String
-  amount      Decimal  @default(0)
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  customerId  String @db.ObjectId
+  amount      String  @default("0")
   paymentDate DateTime
   remarks     String?
   createdAt   DateTime @default(now())
@@ -242,4 +242,12 @@ model TEEPPayment {
   customer TEEPCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   @@index([customerId])
+}
+
+model User {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

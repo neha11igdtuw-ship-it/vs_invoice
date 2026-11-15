@@ -10,7 +10,8 @@ The existing client-only invoice app was extended into a full business dashboard
 |-------|------------|
 | Frontend | React 19 + Vite + React Router |
 | Backend | Express 5 API |
-| Database | SQLite via Prisma ORM |
+| Database | MongoDB (Atlas) via Prisma ORM; money stored as exact decimal strings |
+| Auth | Server-side login, bcrypt + JWT in an httpOnly cookie |
 | Money math | Decimal.js on backend |
 | Mobile | Capacitor (unchanged) |
 
@@ -26,7 +27,8 @@ The existing client-only invoice app was extended into a full business dashboard
 - `src/services/dashboardService.js` — summary + ledger balances
 - `src/services/serialService.js` — invoice / TEEP / bill numbers
 - `src/routes/*.js` — REST APIs
-- `src/seed.js` — default financial year `2026-27`
+- `src/bootstrap.js` — first-run setup: default financial year and admin user from env
+- `src/routes/auth.js`, `src/middleware/auth.js` — login, session cookie, route protection
 
 **Frontend (`src/`)**
 - `api/client.js` — API wrapper

@@ -7,7 +7,7 @@ function buildListHandler(model, searchFields = []) {
   return async ({ financialYearId, search, dateFrom, dateTo, skip, take, orderBy = { createdAt: 'desc' } }) => {
     const where = { financialYearId }
     if (search && searchFields.length) {
-      where.OR = searchFields.map((field) => ({ [field]: { contains: search } }))
+      where.OR = searchFields.map((field) => ({ [field]: { contains: search, mode: 'insensitive' } }))
     }
     if (dateFrom || dateTo) {
       const dateField = model === 'arrival' ? 'arrivalDate' : 'entryDate'
@@ -30,7 +30,7 @@ export const listArrivals = buildListHandler('arrival', ['partyName', 'itemName'
 
 export async function listLedger({ financialYearId, search, dateFrom, dateTo, skip, take }) {
   const where = { financialYearId }
-  if (search) where.partyName = { contains: search }
+  if (search) where.partyName = { contains: search, mode: 'insensitive' }
   if (dateFrom || dateTo) {
     where.entryDate = {}
     if (dateFrom) where.entryDate.gte = new Date(dateFrom)

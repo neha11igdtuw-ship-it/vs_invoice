@@ -86,8 +86,8 @@ export async function listTeeps({ financialYearId, search, dateFrom, dateTo, ski
   }
   if (search) {
     where.OR = [
-      { teepNumber: { contains: search } },
-      { customers: { some: { customerName: { contains: search } } } },
+      { teepNumber: { contains: search, mode: 'insensitive' } },
+      { customers: { some: { customerName: { contains: search, mode: 'insensitive' } } } },
     ]
   }
 
@@ -109,8 +109,8 @@ export async function listTeeps({ financialYearId, search, dateFrom, dateTo, ski
   return { items, total }
 }
 
-export async function getTeep(id) {
-  const teep = await prisma.tEEP.findUnique({
+export async function getTeep(id, db = prisma) {
+  const teep = await db.tEEP.findUnique({
     where: { id },
     include: {
       financialYear: true,
@@ -181,7 +181,7 @@ export async function createTeep(payload) {
       })
     }
 
-    return getTeep(teep.id)
+    return getTeep(teep.id, tx)
   })
 }
 
@@ -240,7 +240,7 @@ export async function updateTeep(id, payload) {
       }
     }
 
-    return getTeep(id)
+    return getTeep(id, tx)
   })
 }
 
